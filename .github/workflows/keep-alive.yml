@@ -1,0 +1,17 @@
+name: Keep Service Alive
+
+on:
+  schedule:
+    # এই কোডটি প্রতি 15 মিনিটে একবার করে চলবে
+    - cron: '*/10 * * * *'
+
+  # (ঐচ্ছিক) এই অংশটি যোগ করলে আপনি ম্যানুয়ালিও অ্যাকশনটি চালাতে পারবেন
+  workflow_dispatch:
+
+jobs:
+  ping-site:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping the website URL to keep it alive
+        # নিচের URL টি আপনার নিজের Render URL দিয়ে পরিবর্তন করুন
+        run: curl -s "https://online-c-compiler-vcvx.onrender.com" > /dev/null
