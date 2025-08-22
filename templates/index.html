@@ -4,30 +4,301 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>C Compiler Shimul</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; background-color: #121212; color: #e0e0e0; display: flex; flex-direction: column; align-items: center; margin: 0; padding: 20px; }
-        h1 { color: #bb86fc; font-weight: 200; }
-        .container { width: 95%; max-width: 800px; margin-top: 20px; background-color: #1e1e1e; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-        h2 { color: #03dac6; margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        textarea { width: 100%; background-color: #2c2c2c; color: #f0f0f0; border: 1px solid #444; border-radius: 5px; padding: 10px; font-size: 16px; font-family: 'Fira Code', 'Courier New', Courier, monospace; box-sizing: border-box; resize: vertical; transition: border-color 0.3s, box-shadow 0.3s; }
-        textarea:focus { border-color: #bb86fc; box-shadow: 0 0 5px rgba(187, 134, 252, 0.5); outline: none; }
-        #code-editor { height: 350px; }
-        #user-input { height: 100px; }
-        button { background-color: #6200ee; color: white; padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 20px; transition: background-color 0.3s, transform 0.1s; display: block; width: 100%; }
-        button:hover:not(:disabled) { background-color: #3700b3; }
-        button:disabled { background-color: #333; cursor: not-allowed; }
-        #output { background-color: #2c2c2c; padding: 15px; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word; min-height: 50px; font-family: 'Fira Code', 'Courier New', Courier, monospace; }
-        .output-error { color: #cf6679; }
+        :root {
+            --primary: #7e57c2;
+            --primary-light: #b085f5;
+            --primary-dark: #4d2c91;
+            --secondary: #26c6da;
+            --secondary-light: #6ff9ff;
+            --secondary-dark: #0095a8;
+            --surface: #1e1e1e;
+            --surface-light: #2d2d2d;
+            --surface-dark: #121212;
+            --error: #cf6679;
+            --on-primary: #ffffff;
+            --on-secondary: #000000;
+            --on-surface: #e0e0e0;
+            --on-error: #000000;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            background: linear-gradient(135deg, var(--surface-dark) 0%, #1a1a2e 100%);
+            color: var(--on-surface);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        h1 {
+            color: var(--primary-light);
+            font-weight: 300;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(187, 134, 252, 0.3);
+            letter-spacing: 1px;
+        }
+
+        .tagline {
+            color: var(--secondary-light);
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 800px;
+            margin-bottom: 25px;
+            background-color: var(--surface);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        h2 {
+            color: var(--secondary);
+            margin-top: 0;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        h2 i {
+            margin-right: 10px;
+            font-size: 1.3rem;
+        }
+
+        textarea {
+            width: 100%;
+            background-color: var(--surface-light);
+            color: var(--on-surface);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 16px;
+            font-family: 'Fira Code', 'Courier New', Courier, monospace;
+            box-sizing: border-box;
+            resize: vertical;
+            transition: var(--transition);
+            line-height: 1.5;
+        }
+
+        textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(187, 134, 252, 0.3);
+            outline: none;
+        }
+
+        #code-editor {
+            height: 350px;
+        }
+
+        #user-input {
+            height: 100px;
+        }
+
+        .button-container {
+            width: 95%;
+            max-width: 800px;
+            margin-bottom: 25px;
+            display: flex;
+            gap: 15px;
+        }
+
+        button {
+            flex: 1;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: var(--on-primary);
+            padding: 16px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(98, 0, 238, 0.3);
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(98, 0, 238, 0.4);
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: var(--surface-light);
+            color: rgba(255, 255, 255, 0.5);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        #run-btn i {
+            margin-right: 8px;
+        }
+
+        #output {
+            background-color: var(--surface-light);
+            padding: 20px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            min-height: 150px;
+            font-family: 'Fira Code', 'Courier New', Courier, monospace;
+            overflow: auto;
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .output-error {
+            color: var(--error);
+            border-left: 4px solid var(--error);
+            padding-left: 15px;
+        }
+
+        .output-success {
+            border-left: 4px solid var(--secondary);
+            padding-left: 15px;
+        }
+
+        .loader {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--on-primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 20px 15px;
+            }
+            
+            .button-container {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            h2 {
+                font-size: 1.2rem;
+            }
+            
+            textarea {
+                padding: 12px;
+                font-size: 14px;
+            }
+        }
+
+        /* Smooth animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--surface);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-light);
+        }
     </style>
 </head>
 <body>
 
-    <h1>সি প্রোগ্রামিং কম্পাইলার [Shimul]</h1>
+    <div class="header fade-in">
+        <h1>সি প্রোগ্রামিং কম্পাইলার [Shimul]</h1>
+        <p class="tagline">আপনার C কোড লিখুন, কম্পাইল করুন এবং রান করুন</p>
+    </div>
 
-    <div class="container">
-        <h2>C কোড</h2>
-        <textarea id="code-editor">
-        #include <stdio.h>
+    <div class="container fade-in">
+        <h2><i class="fas fa-code"></i>C কোড</h2>
+        <textarea id="code-editor" placeholder="আপনার C কোড এখানে লিখুন...">
+#include <stdio.h>
 
 int main(void) {
     int n = 39;              // দেওয়া সংখ্যা
@@ -40,16 +311,27 @@ int main(void) {
         </textarea>
     </div>
 
-    <div class="container">
-        <h2>ইনপুট (scanf এর জন্য)</h2>
+    <div class="container fade-in">
+        <h2><i class="fas fa-keyboard"></i>ইনপুট (scanf এর জন্য)</h2>
         <textarea id="user-input" placeholder="প্রোগ্রামটির জন্য প্রয়োজনীয় ইনপুট এখানে দিন..."></textarea>
     </div>
 
-    <button id="run-btn" onclick="runCode()">রান করুন</button>
+    <div class="button-container">
+        <button id="run-btn" onclick="runCode()">
+            <i class="fas fa-play"></i>রান করুন
+        </button>
+        <button id="clear-btn" onclick="clearCode()">
+            <i class="fas fa-trash"></i>ক্লিয়ার
+        </button>
+    </div>
 
-    <div class="container">
-        <h2>আউটপুট</h2>
+    <div class="container fade-in">
+        <h2><i class="fas fa-terminal"></i>আউটপুট</h2>
         <pre id="output">এখানে আপনার কোডের আউটপুট দেখানো হবে...</pre>
+    </div>
+
+    <div class="footer">
+        C Compiler Shimul &copy; 2023 | Built with <i class="fas fa-heart" style="color: var(--error)"></i>
     </div>
 
     <script>
@@ -59,10 +341,10 @@ int main(void) {
             const outputElement = document.getElementById('output');
             const runButton = document.getElementById('run-btn');
             
-            outputElement.classList.remove('output-error');
-            outputElement.textContent = 'প্রসেসিং...';
+            outputElement.classList.remove('output-error', 'output-success');
+            outputElement.innerHTML = '<span class="loader"></span> আপনার কোড প্রসেস করা হচ্ছে...';
             runButton.disabled = true;
-            runButton.textContent = 'প্রসেসিং...';
+            runButton.innerHTML = '<span class="loader"></span> প্রসেসিং...';
 
             try {
                 const response = await fetch('/compile', {
@@ -77,7 +359,8 @@ int main(void) {
                     outputElement.classList.add('output-error');
                     outputElement.textContent = result.error;
                 } else {
-                    outputElement.textContent = result.output;
+                    outputElement.classList.add('output-success');
+                    outputElement.textContent = result.output || "কোন আউটপুট নেই (প্রোগ্রাম সফলভাবে রান হয়েছে)";
                 }
 
             } catch (err) {
@@ -85,9 +368,23 @@ int main(void) {
                 outputElement.textContent = 'ফ্রন্টএন্ড এরর: সার্ভারের সাথে সংযোগ স্থাপন করা যায়নি। সার্ভার কি চালু আছে?\n' + err;
             } finally {
                 runButton.disabled = false;
-                runButton.textContent = 'রান করুন';
+                runButton.innerHTML = '<i class="fas fa-play"></i>রান করুন';
             }
         }
+
+        function clearCode() {
+            document.getElementById('code-editor').value = '';
+            document.getElementById('user-input').value = '';
+            document.getElementById('output').textContent = 'এখানে আপনার কোডের আউটপুট দেখানো হবে...';
+            document.getElementById('output').classList.remove('output-error', 'output-success');
+        }
+
+        // Add keyboard shortcut (Ctrl+Enter to run code)
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                runCode();
+            }
+        });
     </script>
 </body>
 </html>
