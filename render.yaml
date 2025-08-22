@@ -1,12 +1,7 @@
 services:
   - type: web
     name: online-c-compiler
-    env: python
+    env: docker
     plan: free
-    buildCommand: |
-      pip install -r requirements.txt
-      apt-get update && apt-get install -y clang
-    startCommand: gunicorn --worker-tmp-dir /dev/shm app:app
-    envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.4
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /
